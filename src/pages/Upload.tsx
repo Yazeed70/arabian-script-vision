@@ -3,14 +3,49 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload as UploadIcon, FileImage, X, CheckCircle, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Upload as UploadIcon, FileImage, X, CheckCircle, Loader2, Image as ImageIcon, FileText, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+type ProcessingStage = "idle" | "image-processing" | "text-recognition" | "correction" | "complete";
+
+interface ProcessingStatus {
+  stage: ProcessingStage;
+  progress: number;
+  currentFile: string;
+}
 
 export default function Upload() {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>({
+    stage: "idle",
+    progress: 0,
+    currentFile: ""
+  });
   const { toast } = useToast();
+
+  const stages = [
+    { 
+      id: "image-processing" as ProcessingStage, 
+      label: "معالجة الصورة", 
+      icon: ImageIcon,
+      description: "تحسين الجودة وإزالة التشويش"
+    },
+    { 
+      id: "text-recognition" as ProcessingStage, 
+      label: "التعرف على النص", 
+      icon: FileText,
+      description: "استخراج النص باستخدام الذكاء الاصطناعي"
+    },
+    { 
+      id: "correction" as ProcessingStage, 
+      label: "التصحيح اللغوي", 
+      icon: Sparkles,
+      description: "تحسين النص وتصحيح الأخطاء"
+    }
+  ];
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -52,14 +87,47 @@ export default function Upload() {
 
     setIsProcessing(true);
     
-    // Simulate processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      toast({
-        title: "نجح!",
-        description: "تمت معالجة المخطوطات بنجاح",
+    // Simulate processing stages
+    for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+      const file = files[fileIndex];
+      setProcessingStatus({
+        stage: "image-processing",
+        progress: 0,
+        currentFile: file.name
       });
-    }, 3000);
+
+      // Image processing stage
+      for (let i = 0; i <= 100; i += 10) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+        setProcessingStatus(prev => ({ ...prev, progress: i }));
+      }
+
+      // Text recognition stage
+      setProcessingStatus(prev => ({ ...prev, stage: "text-recognition", progress: 0 }));
+      for (let i = 0; i <= 100; i += 10) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        setProcessingStatus(prev => ({ ...prev, progress: i }));
+      }
+
+      // Correction stage
+      setProcessingStatus(prev => ({ ...prev, stage: "correction", progress: 0 }));
+      for (let i = 0; i <= 100; i += 10) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+        setProcessingStatus(prev => ({ ...prev, progress: i }));
+      }
+    }
+
+    setProcessingStatus({ stage: "complete", progress: 100, currentFile: "" });
+    setIsProcessing(false);
+    
+    toast({
+      title: "نجح!",
+      description: "تمت معالجة المخطوطات بنجاح",
+    });
+
+    setTimeout(() => {
+      setProcessingStatus({ stage: "idle", progress: 0, currentFile: "" });
+    }, 2000);
   };
 
   return (
@@ -158,6 +226,83 @@ export default function Upload() {
                       </Button>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Processing Status */}
+          {isProcessing && (
+            <Card className="mb-8 border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
+              <CardContent className="p-8">
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold font-['Cairo'] mb-2">
+                      جاري المعالجة
+                    </h3>
+                    <p className="text-muted-foreground font-['Cairo']">
+                      {processingStatus.currentFile}
+                    </p>
+                  </div>
+
+                  {/* Stages */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {stages.map((stage, index) => {
+                      const isActive = processingStatus.stage === stage.id;
+                      const isComplete = stages.findIndex(s => s.id === processingStatus.stage) > index;
+                      const Icon = stage.icon;
+
+                      return (
+                        <div
+                          key={stage.id}
+                          className={`
+                            p-6 rounded-lg border-2 transition-all duration-300
+                            ${isActive 
+                              ? "border-accent bg-accent/10 scale-105" 
+                              : isComplete
+                              ? "border-green-500/50 bg-green-500/5"
+                              : "border-border bg-muted/30"
+                            }
+                          `}
+                        >
+                          <div className="flex flex-col items-center gap-3">
+                            <div className={`
+                              w-16 h-16 rounded-full flex items-center justify-center
+                              ${isActive 
+                                ? "bg-accent text-accent-foreground animate-pulse" 
+                                : isComplete
+                                ? "bg-green-500 text-white"
+                                : "bg-muted text-muted-foreground"
+                              }
+                            `}>
+                              {isComplete ? (
+                                <CheckCircle className="w-8 h-8" />
+                              ) : (
+                                <Icon className="w-8 h-8" />
+                              )}
+                            </div>
+                            <div className="text-center">
+                              <p className="font-bold font-['Cairo'] mb-1">
+                                {stage.label}
+                              </p>
+                              <p className="text-xs text-muted-foreground font-['Cairo']">
+                                {stage.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm font-['Cairo']">
+                      <span>التقدم</span>
+                      <span className="text-accent font-bold">{processingStatus.progress}%</span>
+                    </div>
+                    <Progress value={processingStatus.progress} className="h-3" />
+                  </div>
                 </div>
               </CardContent>
             </Card>

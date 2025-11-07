@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileText, Download, Eye, Clock, CheckCircle, Loader2, Search } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Mock data
 const manuscripts = [
@@ -78,6 +79,7 @@ const statusConfig = {
 };
 
 export default function Gallery() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
@@ -198,7 +200,12 @@ export default function Gallery() {
                     {/* Actions */}
                     {manuscript.status === "completed" && (
                       <div className="flex gap-2 pt-2">
-                        <Button variant="outline" size="sm" className="flex-1 font-['Cairo']">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 font-['Cairo']"
+                          onClick={() => navigate(`/manuscript/${manuscript.id}`)}
+                        >
                           <Eye className="w-4 h-4 ml-2" />
                           عرض
                         </Button>

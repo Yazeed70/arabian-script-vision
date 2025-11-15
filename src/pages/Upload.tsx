@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ interface ProcessingStatus {
 }
 
 export default function Upload() {
+  const navigate = useNavigate();
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -126,8 +128,8 @@ export default function Upload() {
     });
 
     setTimeout(() => {
-      setProcessingStatus({ stage: "idle", progress: 0, currentFile: "" });
-    }, 2000);
+      navigate("/manuscript/1");
+    }, 1500);
   };
 
   return (

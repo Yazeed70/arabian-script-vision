@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,9 +29,12 @@ export const Navbar = () => {
             <Link to="/gallery" className="text-foreground hover:text-accent transition-colors font-['Cairo']">
               المعرض
             </Link>
-            <Button variant="default" className="font-['Cairo']">
-              تسجيل الدخول
-            </Button>
+            <ThemeToggle />
+            <Link to="/auth">
+              <Button variant="default" className="font-['Cairo']">
+                تسجيل الدخول
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -67,9 +71,14 @@ export const Navbar = () => {
               >
                 المعرض
               </Link>
-              <Button variant="default" className="font-['Cairo']">
-                تسجيل الدخول
-              </Button>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <Link to="/auth" className="flex-1" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="default" className="font-['Cairo'] w-full">
+                    تسجيل الدخول
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         )}
